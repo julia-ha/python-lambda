@@ -1,0 +1,6 @@
+boto3
+botocore
+flask
+flask_cors
+ocrmypdf
+requests
