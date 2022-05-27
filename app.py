@@ -44,11 +44,14 @@ def _s3_upload_file(file_name, bucket, object_name=None):
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
+    """
     s3 = boto3.Session(
         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
     ).resource('s3')
+    """
 
+    s3 = boto3.resource('s3')
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = os.path.basename(file_name)
@@ -75,14 +78,17 @@ def _s3_get_file(bucket, object_name, file_name):
     :param bucket: Bucket to download from
     :param object_name: S3 object name to download
     """
+    """
     s3 = boto3.Session(
         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
     ).resource('s3')
+    """
+    s3 = boto3.resource('s3')
 
     s3_bucket = s3.Bucket(bucket)
-    s3 = boto3.client ('s3')
-    s3_bucket.download_file(object_name, file_name)
+    file_path = '/tmp/' + file_name
+    s3_bucket.download_file(object_name, file_path)
 
 
 def handler(event, context):
