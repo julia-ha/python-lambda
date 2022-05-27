@@ -25,8 +25,9 @@ def _pdf_get(event, context):
   print(file_content)
 
 
-def reocr_pdf(infile, outfile, **kwargs):
-    ocrmypdf.ocr(infile, outfile, **kwargs)
+def reocr_pdf(infile, outfile):
+    ocrmypdf.ocr(infile, outfile, deskew=True)
+    #ocrmypdf.ocr(infile, outfile, **kwargs)
 
 def get_pdf_url(doi):
     return requests.get(f'https://b49tnk5c88.execute-api.us-east-1.amazonaws.com/prod/pdf-url/{doi}').text
@@ -44,6 +45,9 @@ def _s3_upload_file(file_name, bucket, object_name=None):
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
+    s3 = boto3.resource('s3')
+
+    #uncomment to run locally
     """
     s3 = boto3.Session(
         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
@@ -51,7 +55,6 @@ def _s3_upload_file(file_name, bucket, object_name=None):
     ).resource('s3')
     """
 
-    s3 = boto3.resource('s3')
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = os.path.basename(file_name)
@@ -78,13 +81,15 @@ def _s3_get_file(bucket, object_name, file_name):
     :param bucket: Bucket to download from
     :param object_name: S3 object name to download
     """
+    s3 = boto3.resource('s3')
+
+    #uncomment to run locally
     """
     s3 = boto3.Session(
         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
     ).resource('s3')
     """
-    s3 = boto3.resource('s3')
 
     s3_bucket = s3.Bucket(bucket)
     file_path = '/tmp/' + file_name
@@ -95,6 +100,10 @@ def handler(event, context):
 
    # Downloading '652164.pdf' from s3 bucket 'ocr-pdfs' into local file 'download_652164.pdf'
    _s3_get_file('ocr-pdfs', '652164.pdf', 'download_652164.pdf')
+
+   infile = '/tmp/' + 'download_652164.pdf'
+   outfile = '/tmp/reprocessed' + '652164.pdf'
+   reocr_pdf(infile, outfile)
 
    # Uploading local file 'test.pdf' into s3 bucket 'ocr-pdfs' to object name 'test.pdf'
    # _s3_upload_file('test.pdf', 'ocr-pdfs', 'test.pdf')
